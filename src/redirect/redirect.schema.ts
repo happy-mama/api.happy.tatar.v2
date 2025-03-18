@@ -12,14 +12,14 @@ const URL_REGEX =
 })
 export class Redirect {
   @Prop({
-    default: "",
+    required: [true, "url:required:true"],
     minlength: [10, "url:minlength:{MINLENGTH}"],
     validate: [URL_REGEX, "url:validate:URL"],
   })
   url: string;
 
   @Prop({
-    default: "test",
+    required: [true, "key:required:true"],
     minlength: [1, "key:minlength:{MINLENGTH}"],
     maxlength: [20, "key:maxlength:{MAXLENGTH}"],
     unique: [true, "key:unique:true"],

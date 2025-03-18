@@ -14,8 +14,12 @@ interface GORT<T = any> {
       | "PROPERTY_LENGTH_INVALID"
       | "PROPERTY_VALIDATE"
       | "PROPERTY_UNIQUE"
-      | "NOTHING_FOUND";
+      | "PROPERTY_MISSING"
+      | "NOT_FOUND";
     message?: string;
+  };
+  success: {
+    type: "success";
   };
   item: {
     type: "item";
@@ -24,5 +28,16 @@ interface GORT<T = any> {
   items: {
     type: "items";
     items: T[];
+  };
+  serverStatus: {
+    type: "serverStatus";
+    serverStatus: {
+      platform: string;
+      freeMem: string;
+      totalMem: string;
+      cpuThreads: number;
+      cpuName: string;
+      cpuSpeed: string;
+    };
   };
 }

@@ -1,3 +1,6 @@
+import { HttpStatus } from "@nestjs/common";
+import { Response } from "express";
+
 type MongooseError = {
   errors: {
     [key: string]: {
@@ -71,5 +74,20 @@ const errorCodeParser: (error: string) => GORT["error"]["error"] = (error) => {
 
   if (type == "unique") return "PROPERTY_UNIQUE";
 
+  if (type == "required") return "PROPERTY_MISSING";
+
   return "UNKNOWN";
+};
+
+export const setResponseStatusCode: (
+  res: Response,
+  data: GORT["error" | "item" | "items" | "serverStatus" | "success"],
+) => void = (res, data) => {
+  if (data.type == "error") {
+    if (data.error == "NOT_FOUND") {
+      res.status(HttpStatus.NOT_FOUND);
+    }
+
+    res.status(HttpStatus.BAD_REQUEST);
+  }
 };

@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 
-import { Redirect, RedirectSchema } from "src/redirect/redirect.schema";
+import { Redirect, RedirectSchema } from "../redirect/redirect.schema";
 import { RedirectController } from "./redirect.controller";
 import { RedirectService } from "./redirect.service";
 

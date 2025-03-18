@@ -1,25 +1,40 @@
-import { Test, TestingModule } from "@nestjs/testing";
+import { Test } from "@nestjs/testing";
 import { INestApplication } from "@nestjs/common";
 import * as request from "supertest";
-import { App } from "supertest/types";
-import { AppModule } from "./../src/app.module";
 
-describe("AppController (e2e)", () => {
-  let app: INestApplication<App>;
+import { AppModule } from "../src/app.module";
+import { MemoryDBModule } from "./momoryDB.module";
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+describe("AppController", () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule, MemoryDBModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = moduleRef.createNestApplication();
     await app.init();
   });
 
-  it("/ (GET)", () => {
-    return request(app.getHttpServer())
-      .get("/")
-      .expect(200)
-      .expect("Hello World!");
+  afterAll(async () => {
+    await MemoryDBModule.closeDatabase();
+    await app.close();
+  });
+
+  it(`GET /status`, async () => {
+    const res = await request(app.getHttpServer()).get("/status").expect(200);
+
+    expect(res.body).toMatchObject({
+      type: "serverStatus",
+      serverStatus: expect.objectContaining({
+        cpuName: expect.any(String) as string,
+        cpuSpeed: expect.any(String) as string,
+        cpuThreads: expect.any(Number) as number,
+        freeMem: expect.any(String) as string,
+        platform: expect.any(String) as string,
+        totalMem: expect.any(String) as string,
+      }) as GORT["serverStatus"]["serverStatus"],
+    } as GORT["serverStatus"]);
   });
 });

@@ -1,6 +1,17 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Res,
+} from "@nestjs/common";
+import { Response } from "express";
+
 import { RedirectService } from "./redirect.service";
 import { Redirect } from "./redirect.schema";
+import { setResponseStatusCode } from "../kit/error";
 
 @Controller("t")
 export class RedirectController {
@@ -17,7 +28,26 @@ export class RedirectController {
   }
 
   @Post()
-  async createOne(@Body() body: Redirect) {
-    return this.redirectService.createOne(body);
+  async createOne(
+    @Body() body: Redirect,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const data = await this.redirectService.createOne(body);
+
+    setResponseStatusCode(res, data);
+
+    return data;
+  }
+
+  @Delete(":key")
+  async deleteOne(
+    @Param("key") key: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const data = await this.redirectService.deleteOne(key);
+
+    setResponseStatusCode(res, data);
+
+    return data;
   }
 }
