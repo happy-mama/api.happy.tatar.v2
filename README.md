@@ -1,3 +1,21 @@
+# New modern api for my [site](https://happy.tatar).
+
+Nest.js, MongoDB, TypeScript and Types without "any" 
+
+# Completed tasks:
+ - url redirect (getOne, getAll, createOne, deleteOne)
+ - jest tests! (only e2e, memoryDB)
+ - errors (API will always return an understandable error or response with "type" structure and appropriate status code... except for 500)
+ - server machine statistics (free memory, processor, platform, etc.)
+
+# Scheduled tasks:
+ - file server
+ - accounts and auth
+ - board saving for canvas drawer on frontend
+ - something with WebSockets
+
+# Still in development, only old API is hosted
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
