@@ -8,6 +8,8 @@ interface GORT<T = any> {
       | "UNKNOWN"
       | "HEADER_MISSING"
       | "HEADER_INVALID"
+      | "PARAMETER_MISSING"
+      | "PARAMETER_INVALID"
       | "BODY_MISSING"
       | "BODY_INVALID"
       | "PROPERTY_TYPE_INVALID"
@@ -15,6 +17,8 @@ interface GORT<T = any> {
       | "PROPERTY_VALIDATE"
       | "PROPERTY_UNIQUE"
       | "PROPERTY_MISSING"
+      | "DIRECTORY_TRAVERSAL"
+      | "NO_SUCH_FILE_OR_DIRECTORY"
       | "NOT_FOUND";
     message?: string;
   };

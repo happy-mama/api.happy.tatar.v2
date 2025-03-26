@@ -25,7 +25,14 @@ type MongooseError = {
   cause: any;
 };
 
-// mongoose error have "any" type too
+type FSError = {
+  errno: number;
+  code: string;
+  syscall: string;
+  path: string;
+};
+
+// mongoose error have "any" type
 export const mongooseErrorParser: (e: any) => GORT["error"] = (
   e: MongooseError,
 ) => {
@@ -65,6 +72,21 @@ export const mongooseErrorParser: (e: any) => GORT["error"] = (
   }
 };
 
+// fs error have "any" type
+export const fsErrorParser: (e: any) => GORT["error"] = (e: FSError) => {
+  if (e.code == "ENOENT") {
+    return {
+      type: "error",
+      error: "NO_SUCH_FILE_OR_DIRECTORY",
+    };
+  }
+
+  return {
+    type: "error",
+    error: "UNKNOWN",
+  };
+};
+
 const errorCodeParser: (error: string) => GORT["error"]["error"] = (error) => {
   const type = error.split(":")[1];
 
@@ -84,9 +106,10 @@ export const setResponseStatusCode: (
   data: GORT["error" | "item" | "items" | "serverStatus" | "success"],
 ) => void = (res, data) => {
   if (data.type == "error") {
-    if (data.error == "NOT_FOUND") {
-      res.status(HttpStatus.NOT_FOUND);
-    }
+    if (data.error == "NOT_FOUND") return res.status(HttpStatus.NOT_FOUND);
+
+    if (data.error == "NO_SUCH_FILE_OR_DIRECTORY")
+      return res.status(HttpStatus.NOT_FOUND);
 
     res.status(HttpStatus.BAD_REQUEST);
   }
