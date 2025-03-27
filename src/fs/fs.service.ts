@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, StreamableFile } from "@nestjs/common";
 import * as fs from "fs";
 import * as path from "path";
+import { Response } from "express";
 
 import { fsErrorParser } from "../kit/error";
 
@@ -44,23 +45,29 @@ export class FSService {
     return resolvedPath;
   }
 
-  async getFiles(dir: string): Promise<GORT<FSFile>["items" | "error"]> {
-    const safeDir = this.validatePath(dir);
+  private streamFile(
+    safeDir: string,
+    res: Response,
+  ): GORT["error"] | StreamableFile {
+    try {
+      const x = safeDir.split(path.sep);
+      const filename = x[x.length - 1];
 
-    if (typeof safeDir != "string") {
-      return safeDir;
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
+      res.setHeader("Content-Type", "application/octet-stream");
+
+      const fileStream = fs.createReadStream(safeDir);
+
+      return new StreamableFile(fileStream);
+    } catch {
+      return {
+        type: "error",
+        error: "UNKNOWN",
+      };
     }
-
-    return fs.promises
-      .readdir(safeDir, { withFileTypes: true })
-      .then((data) => ({
-        type: "items" as GORT["items"]["type"],
-        items: data.map((v) => ({
-          name: v.name,
-          type: v.isDirectory() ? "dir" : ("file" as FSFile["type"]),
-        })),
-      }))
-      .catch((e) => fsErrorParser(e));
   }
 
   private writeFile = (
@@ -86,7 +93,47 @@ export class FSService {
       .catch((e) => fsErrorParser(e));
   };
 
-  async uploadFile({
+  async readDirOrStreamFile(
+    dir: string,
+    res: Response,
+  ): Promise<GORT<FSFile>["items" | "error"] | StreamableFile> {
+    const safeDir = this.validatePath(dir);
+
+    if (typeof safeDir != "string") {
+      return safeDir;
+    }
+
+    return fs.promises
+      .stat(safeDir)
+      .then(async (data) => {
+        if (data.isDirectory()) {
+          return await fs.promises
+            .readdir(safeDir, { withFileTypes: true })
+            .then(
+              (data) =>
+                ({
+                  type: "items",
+                  items: data.map((v) => ({
+                    name: v.name,
+                    type: v.isDirectory() ? "dir" : "file",
+                  })),
+                }) as GORT<FSFile>["items"],
+            )
+            .catch((e) => fsErrorParser(e));
+        }
+        if (data.isFile()) {
+          return this.streamFile(safeDir, res);
+        }
+
+        return {
+          type: "error",
+          error: "UNKNOWN",
+        } as GORT["error"];
+      })
+      .catch((e) => fsErrorParser(e));
+  }
+
+  async mkdirOrUploadFile({
     dir,
     file,
     fsKey,
@@ -117,6 +164,18 @@ export class FSService {
       return safeDir;
     }
 
+    if (!file) {
+      return fs.promises
+        .mkdir(safeDir)
+        .then(
+          () =>
+            ({
+              type: "success",
+            }) as GORT["success"],
+        )
+        .catch((e) => fsErrorParser(e));
+    }
+
     const filePath = path.join(safeDir, file.originalname);
 
     return fs.promises
@@ -136,5 +195,51 @@ export class FSService {
 
         return error;
       });
+  }
+
+  async removeDirOrFile(
+    dir: string,
+    fsKey: string,
+  ): Promise<GORT["success" | "error"]> {
+    if (!fsKey) {
+      return {
+        type: "error",
+        error: "HEADER_MISSING",
+        message: "fs-key:required:secret",
+      };
+    }
+
+    if (fsKey != process.env.FS_KEY) {
+      return {
+        type: "error",
+        error: "HEADER_INVALID",
+        message: "fs-key:invalid:secret",
+      };
+    }
+
+    const safeDir = this.validatePath(dir);
+
+    if (typeof safeDir != "string") {
+      return safeDir;
+    }
+
+    if (safeDir == this.publicDir)
+      return {
+        type: "error",
+        error: "PARAMETER_INVALID",
+        message: "dir:equals:publicDir",
+      };
+
+    // quite dangerous, I know
+    // F to my server if I made a mistake somewhere
+    return fs.promises
+      .rm(safeDir, { recursive: true })
+      .then(
+        () =>
+          ({
+            type: "success",
+          }) as GORT["success"],
+      )
+      .catch((e) => fsErrorParser(e));
   }
 }

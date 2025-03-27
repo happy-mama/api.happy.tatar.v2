@@ -81,6 +81,27 @@ export const fsErrorParser: (e: any) => GORT["error"] = (e: FSError) => {
     };
   }
 
+  if (e.code == "ENOTDIR") {
+    return {
+      type: "error",
+      error: "PATH_NOT_A_DIR",
+    };
+  }
+
+  if (e.code == "EISDIR") {
+    return {
+      type: "error",
+      error: "PATH_NOT_A_FILE",
+    };
+  }
+
+  if (e.code == "EEXIST") {
+    return {
+      type: "error",
+      error: "FILE_OR_DIR_ALREADY_EXISTS",
+    };
+  }
+
   return {
     type: "error",
     error: "UNKNOWN",

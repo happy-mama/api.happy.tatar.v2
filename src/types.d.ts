@@ -19,6 +19,9 @@ interface GORT<T = any> {
       | "PROPERTY_MISSING"
       | "DIRECTORY_TRAVERSAL"
       | "NO_SUCH_FILE_OR_DIRECTORY"
+      | "FILE_OR_DIR_ALREADY_EXISTS"
+      | "PATH_NOT_A_FILE"
+      | "PATH_NOT_A_DIR"
       | "NOT_FOUND";
     message?: string;
   };

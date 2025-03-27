@@ -8,11 +8,11 @@ Nest.js, MongoDB, TypeScript and Types without "any"
 - jest tests! (only e2e, memoryDB)
 - errors (API will always return an understandable error or response with "type" structure and appropriate status code... except for 500)
 - server machine statistics (free memory, processor, platform, etc.)
-- file server (read dir, upload file)
+- file server (remove file/dir, read file/dir, create file/dir)
 
 # Scheduled tasks:
 
-- file server (create dir, remove file/dir, public access via auth, tests)
+- file server (public access via auth, tests)
 - accounts and auth
 - board saving for canvas drawer on frontend
 - something with WebSockets

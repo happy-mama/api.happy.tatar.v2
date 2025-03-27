@@ -7,6 +7,7 @@ import {
   Query,
   UploadedFile,
   UseInterceptors,
+  Delete,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Response } from "express";
@@ -19,13 +20,15 @@ export class FSController {
   constructor(private readonly fsService: FSService) {}
 
   @Get()
-  async getFiles(
-    @Query("dir") dir: string = "",
+  async readDirOrStreamFile(
     @Res({ passthrough: true }) res: Response,
-  ): Promise<GORT<FSFile>["items" | "error"]> {
-    const data = await this.fsService.getFiles(dir);
+    @Query("dir") dir: string = "",
+  ) {
+    const data = await this.fsService.readDirOrStreamFile(dir, res);
 
-    setResponseStatusCode(res, data);
+    if ("type" in data) {
+      setResponseStatusCode(res, data);
+    }
 
     return data;
   }
@@ -49,13 +52,26 @@ export class FSController {
       },
     }),
   )
-  async uploadFile(
+  async mkdirOrUploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Res({ passthrough: true }) res: Response,
     @Query("dir") dir: string = "",
     @Headers("fs-key") fsKey: string,
   ): Promise<GORT["success" | "error"]> {
-    const data = await this.fsService.uploadFile({ dir, file, fsKey });
+    const data = await this.fsService.mkdirOrUploadFile({ dir, file, fsKey });
+
+    setResponseStatusCode(res, data);
+
+    return data;
+  }
+
+  @Delete()
+  async removeDirOrFile(
+    @Res({ passthrough: true }) res: Response,
+    @Query("dir") dir: string = "",
+    @Headers("fs-key") fsKey: string,
+  ) {
+    const data = await this.fsService.removeDirOrFile(dir, fsKey);
 
     setResponseStatusCode(res, data);
 
