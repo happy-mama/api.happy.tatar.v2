@@ -17,8 +17,6 @@ Nest.js, MongoDB, TypeScript and Types without "any"
 - board saving for canvas drawer on frontend
 - something with WebSockets
 
-# Still in development, only old API is hosted
-
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
