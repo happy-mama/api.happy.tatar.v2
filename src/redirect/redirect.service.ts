@@ -15,6 +15,7 @@ export class RedirectService {
 
   async findOne(
     key: Redirect["key"],
+    notCount: boolean,
   ): Promise<GORT<Redirect>["item" | "error"]> {
     const _redirect = await this.RedirectModel.findOne({ key });
 
@@ -25,8 +26,10 @@ export class RedirectService {
       };
     }
 
-    await _redirect.updateOne({ $inc: { redirected: 1 } }).exec();
-    _redirect.redirected++;
+    if (!notCount) {
+      await _redirect.updateOne({ $inc: { redirected: 1 } }).exec();
+      _redirect.redirected++;
+    }
 
     return {
       type: "item",
